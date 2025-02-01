@@ -1,4 +1,4 @@
-from peewee import PostgresqlDatabase, Model, TextField, TimestampField, IntegerField
+from peewee import PostgresqlDatabase, Model, TextField, TimestampField
 
 import secrets
 
@@ -9,21 +9,22 @@ db = PostgresqlDatabase(secrets.DATABASE_INFO["name"],
                         port=secrets.DATABASE_INFO["port"])
 
 
-class WatchListEntity(Model):
-    info_link = TextField(unique=True)
+class WatchListRecord(Model):
     type = TextField(choices=['anime', 'film', 'tv-show'])
-    status = IntegerField()
+    information_url = TextField(unique=True)
     creator = TextField()
     note = TextField(null=True)
+
+    status = TextField(choices=["added", "scheduled", "watched"])
     created_at = TimestampField()
+    watched_at = TimestampField(null=True)
 
     class Meta:
         database = db
 
-
-db.connect()
-
-# print(list((WatchListEntity.select())))
+# db.connect()
 #
-# db.drop_tables([WatchListEntity])
-# db.create_tables([WatchListEntity])
+# # print(list((WatchListRecord.select())))
+#
+# db.drop_tables([WatchListRecord])
+# db.create_tables([WatchListRecord])

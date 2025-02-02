@@ -2,7 +2,7 @@ from peewee import PostgresqlDatabase, Model, TextField, TimestampField
 
 import secrets
 
-db = PostgresqlDatabase(secrets.DATABASE_INFO["name"],
+db = PostgresqlDatabase(secrets.DATABASE_INFO["type_name"],
                         user=secrets.DATABASE_INFO["user"],
                         password=secrets.DATABASE_INFO["password"],
                         host=secrets.DATABASE_INFO["host"],
@@ -21,6 +21,7 @@ class WatchListRecord(Model):
 
     class Meta:
         database = db
-
+#
+#
 # db.drop_tables([WatchListRecord])
 # db.create_tables([WatchListRecord])

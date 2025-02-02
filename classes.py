@@ -18,6 +18,17 @@ class EntityInfo:
 
 
 class WikiHelper:
+
+    @staticmethod
+    def find_keywords(page, keywords):
+        page_summary = page.summary.lower()
+
+        for keyword in keywords:
+            if keyword not in page_summary:
+                return False
+
+        return False
+
     @staticmethod
     def get_english_page(page_link):
         if "wikipedia.org/wiki/" not in page_link:
@@ -45,7 +56,7 @@ class WikiHelper:
 
 
 class WatchListRecord:
-    type = "None"
+    type_name = "type_name was not set"
 
     def __init__(self, db_record):
         self.information_url = db_record.information_url
@@ -61,7 +72,7 @@ class WatchListRecord:
         raise NotImplementedError(f"Function validate link was not implemented")
 
     def get_info(self):
-        raise NotImplementedError(f"Function get_info for type {self.type} was not implemented")
+        raise NotImplementedError(f"Function get_info for type {self.type_name} was not implemented")
 
     def __str__(self):
         record_info = self.get_info()
@@ -77,7 +88,7 @@ class WatchListRecord:
 
 
 class AnimeWatchListRecord(WatchListRecord):
-    name = 'anime'
+    type_name = 'anime'
 
     def __init__(self, db_record):
         super().__init__(db_record)
@@ -104,7 +115,7 @@ class AnimeWatchListRecord(WatchListRecord):
 
 
 class FilmWatchListRecord(WatchListRecord):
-    name = 'film'
+    type_name = 'film'
 
     def __init__(self, db_record):
         super().__init__(db_record)
@@ -113,11 +124,19 @@ class FilmWatchListRecord(WatchListRecord):
     @staticmethod
     def validate_link(information_url):
         page = WikiHelper.get_english_page(information_url)
-        page_summary = page.summary.lower()
-        if (("film" in page_summary) and ("directed by" in page_summary)) or ("animated" in page_summary):
-            return page.canonicalurl
 
-        raise Exception("Not a film related wikipedia page, if you think it is then contact perite")
+        is_film_keywords = ['film', 'directed by']
+        is_cartoon_keywords = ['animated']
+        banned_keywords = ['soundtrack']
+
+        is_film = WikiHelper.find_keywords(page, is_film_keywords)
+        is_cartoon = WikiHelper.find_keywords(page, is_cartoon_keywords)
+        is_have_banned_keywords = WikiHelper.find_keywords(page, banned_keywords)
+
+        if (not (is_film or is_cartoon)) or is_have_banned_keywords:
+            raise Exception("Not a film related wikipedia page, if you think it is then contact perite")
+
+        return page.canonicalurl
 
     def get_info(self):
         return EntityInfo(
@@ -132,7 +151,7 @@ class FilmWatchListRecord(WatchListRecord):
 
 
 class TvShowWatchListRecord(WatchListRecord):
-    name = 'tv-show'
+    type_name = 'tv-show'
 
     def __init__(self, db_record):
         super().__init__(db_record)
@@ -141,12 +160,21 @@ class TvShowWatchListRecord(WatchListRecord):
     @staticmethod
     def validate_link(information_url):
         page = WikiHelper.get_english_page(information_url)
-        page_summary = page.summary.lower()
 
-        if (("television series" in page_summary) or ("sitcoms" in page_summary)) and ("created by" in page_summary):
-            return page.canonicalurl
+        is_television_series_keywords = ['television series']
+        is_sitcom_keywords = ['sitcoms']
+        is_has_author_keywords = ['created by']
+        banned_keywords = ['soundtrack']
 
-        raise Exception("Not a tv-show related wikipedia page, if you think it is then contact perite")
+        is_television_series = WikiHelper.find_keywords(page, is_television_series_keywords)
+        is_sitcom = WikiHelper.find_keywords(page, is_sitcom_keywords)
+        is_has_author = WikiHelper.find_keywords(page, is_has_author_keywords)
+        is_have_banned_keywords = WikiHelper.find_keywords(page, banned_keywords)
+
+        if (not (is_television_series or is_sitcom)) or (not is_has_author) or is_have_banned_keywords:
+            raise Exception("Not a tv-show related wikipedia page, if you think it is then contact perite")
+
+        return page.canonicalurl
 
     def get_info(self):
         return EntityInfo(
@@ -169,7 +197,7 @@ class TypesAndRecordsManagers:
 
     @staticmethod
     def get_type(type_name):
-        type_class = list(filter(lambda type_class: type_class.name == type_name, TypesAndRecordsManagers.types))
+        type_class = list(filter(lambda type_class: type_class.type_name == type_name, TypesAndRecordsManagers.types))
         if not type_class:
             raise Exception("Unsupported type")
 

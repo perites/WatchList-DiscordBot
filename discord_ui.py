@@ -12,7 +12,8 @@ class RecordsOfTypeSelector(Select):
                                         value=record.db_id)
                    for record in records]
 
-        super().__init__(placeholder=f"Choose a {records[0].name} to set status watched", min_values=1, max_values=1,
+        super().__init__(placeholder=f"Choose a {records[0].type_name} to set status watched", min_values=1,
+                         max_values=1,
                          options=options)
 
     async def callback(self, interaction: discord.Interaction):

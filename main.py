@@ -1,7 +1,7 @@
 # TODO add logging to channel for critical errors
-# TODO add dropdown type menu
+# TODO add dropdown type_name menu
 # TODO add ability to schedule using discrod events
-# TODO add command for random record, random record of type
+# TODO add command for random record, random record of type_name
 # todo add caching fot mal and wikipage objects
 
 import logging
@@ -42,7 +42,7 @@ async def show(ctx):
     )
 
     for type_class in taem.types:
-        db_records_of_type = taem.get_db_records_of_type(type_class.name)
+        db_records_of_type = taem.get_db_records_of_type(type_class.type_name)
         if not db_records_of_type:
             continue
 
@@ -50,7 +50,7 @@ async def show(ctx):
         for index, db_record in enumerate(db_records_of_type):
             value += f"{index}. {str(taem.db_record_to_record(type_class, db_record))}"
 
-        embed.add_field(name=f"{type_class.name}(s)", value=value, inline=False)
+        embed.add_field(name=f"{type_class.type_name}(s)", value=value, inline=False)
 
     await ctx.send(embed=embed)
 

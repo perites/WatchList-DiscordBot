@@ -17,7 +17,7 @@ import tools
 
 bot = commands.Bot(command_prefix=f"{config.prefix}", activity=discord.Game(name=f'{config.prefix} help'),
                    intents=discord.Intents.all())
-
+bot.remove_command('help')
 logging.basicConfig(
     format='%(asctime)s [%(levelname)s] : %(message)s  ||[LOGGER:%(name)s] [FUNC:%(funcName)s] [FILE:%(filename)s]',
     datefmt='%H:%M:%S:%MS',
@@ -30,6 +30,40 @@ logging.basicConfig(
 
 taem = classes.TypesAndRecordsManagers()
 taem.set_types([classes.AnimeWatchListRecord, classes.FilmWatchListRecord, classes.TvShowWatchListRecord])
+
+
+@bot.command(name="help")
+@commands.cooldown(1, 60, commands.BucketType.user)
+async def help(ctx):
+    msg = '''Користування вотчлістом відбувається через команду !wl
+
+type_name : film / anime / tv-show 
+
+Команди бота:
+- !wl add <type_name> <link> | додає запис в вотчліст
+Для кожного type_name в команді add потрібно своє посилання:
+film - посилання на вікіпедію з фільмом
+anime - посилання на myanimelist з аніме
+tv-show - посилання на вікіпедію з серіалом
+
+- !wl show | показує наявні записи в вотчлісті
+
+- !wl watched <type_name> | відмічає запис як продивлений і видаляє з вотчліста
+
+- !wl random | видає випадковий запис з усіх наявних записів
+
+- !wl random <type_name> | видає випадковий запис певного типу
+
+
+Вотчліст знаходиться в тестувальному режимі, тому якщо викникнуть якісь ідеї попіпшення / знайдете якісь баги пишіть мені (@perite)
+І нагадую що користування всіма ботами відбувається в каналі #бот для зручності 
+'''
+    embed = discord.Embed(
+        title='Watchlist Help',
+        color=discord.Color.dark_grey(),
+        description=msg
+    )
+    await ctx.send(embed=embed)
 
 
 @bot.command(name="show")

@@ -107,7 +107,7 @@ class AnimeWatchListRecord(WatchListRecord):
     def __init__(self, db_record):
         super().__init__(db_record)
 
-        self.mal_title = self.get_from_cache(list(reversed(self.information_url.split('/')))[1])
+        self.mal_title = self.get_from_cache(list(reversed(self.information_url.split('/')))[0])
 
     def value_from_key(self, key):
         return mal.Anime(key)

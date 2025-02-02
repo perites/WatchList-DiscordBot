@@ -1,6 +1,6 @@
 discord
 peewee
-requests
 psycopg2-binary
+requests
 wikipedia-api
 mal-api

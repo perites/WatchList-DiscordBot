@@ -48,7 +48,12 @@ async def show(ctx):
 
         value = ""
         for index, db_record in enumerate(db_records_of_type):
-            value += f"{index}. {str(taem.db_record_to_record(type_class, db_record))}"
+
+            record = taem.db_record_to_record(type_class, db_record)
+            if not record:
+                continue
+
+            value += f"{index}. {str(record)}"
 
         embed.add_field(name=f"{type_class.type_name}(s)", value=value, inline=False)
 
@@ -76,29 +81,27 @@ async def watched(ctx, type_name):
     type_class = taem.get_type(type_name)
     records = []
     for db_record in taem.get_db_records_of_type(type_name):
-        records.append(taem.db_record_to_record(type_class, db_record))
+        record = taem.db_record_to_record(type_class, db_record)
+        if not record:
+            continue
+        records.append(record)
 
-    await ctx.send(f"Choose a {type_name} to set status watched:", view=discord_ui.MyView(records))
-
-
-# @bot.command()
-# # @has_role(roles_for_clean)
-# async def clean(ctx, limit):
-#     limit = int(limit)
-#     await ctx.channel.purge(limit=int(limit) + 1)
+    await ctx.send(f"Choose a {type_name} to set status watched:", view=discord_ui.RecordsOfTypeSelectorView(records))
 
 
-# @bot.event
-# async def on_command_error(ctx, error):
-#     logging.error(f"{error} - {ctx.author}")
-#     if isinstance(error, commands.CommandInvokeError):
-#         embed = tools.error_embed(error.original)
-#     elif isinstance(error, commands.CommandNotFound):
-#         return
-#     else:
-#         embed = tools.error_embed(error)
-#
-#     await ctx.send(embed=embed)
+@bot.command()
+async def clean(ctx, limit):
+    if str(ctx.author.id) != "513071445790949386":
+        await ctx.send(embed=tools.error_embed("No prav"))
+        return
+    limit = int(limit)
+    await ctx.channel.purge(limit=int(limit) + 1)
+
+
+@bot.event
+async def on_command_error(ctx, error):
+    embed = tools.process_error(ctx.author.name, error)
+    await ctx.send(embed=embed)
 
 
 if __name__ == '__main__':

@@ -31,7 +31,11 @@ class RecordsOfTypeSelector(Select):
         await interaction.response.send_message(embed=embed)
 
 
-class MyView(View):
+class RecordsOfTypeSelectorView(View):
     def __init__(self, records_info):
         super().__init__()
         self.add_item(RecordsOfTypeSelector(records_info))
+
+    async def on_error(self, interaction: discord.Interaction, error: Exception, item):
+        embed = tools.process_error(interaction.user.name, error)
+        await interaction.response.send_message(embed=embed)

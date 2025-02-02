@@ -1,4 +1,5 @@
 import dataclasses
+import logging
 
 import mal
 import wikipediaapi
@@ -22,12 +23,14 @@ class WikiHelper:
     @staticmethod
     def find_keywords(page, keywords):
         page_summary = page.summary.lower()
+        print(page_summary)
 
         for keyword in keywords:
             if keyword not in page_summary:
+                print(keyword)
                 return False
 
-        return False
+        return True
 
     @staticmethod
     def get_english_page(page_link):
@@ -133,6 +136,10 @@ class FilmWatchListRecord(WatchListRecord):
         is_cartoon = WikiHelper.find_keywords(page, is_cartoon_keywords)
         is_have_banned_keywords = WikiHelper.find_keywords(page, banned_keywords)
 
+        print(is_film)
+        print(is_cartoon)
+        print(is_have_banned_keywords)
+
         if (not (is_film or is_cartoon)) or is_have_banned_keywords:
             raise Exception("Not a film related wikipedia page, if you think it is then contact perite")
 
@@ -213,4 +220,10 @@ class TypesAndRecordsManagers:
 
     @staticmethod
     def db_record_to_record(type_class, db_record):
-        return type_class(db_record)
+        try:
+            return type_class(db_record)
+        except Exception as e:
+            msg = f"Something wrong with link for type {type_class.type_name}: {db_record.information_url} (id:{db_record.id})"
+            logging.critical(msg)
+            # await ctx.send(embed=tools.error_embed(msg))
+            return None

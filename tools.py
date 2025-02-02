@@ -2,13 +2,16 @@ import logging
 
 import discord
 import requests
+from discord.ext import commands
 
 import models
 
 
 def is_valid_url(url):
     try:
-        requests.get(url)
+        if not requests.get(url).status_code == 200:
+            raise Exception()
+
     except Exception as e:
         raise Exception("Not a valid link")
 
@@ -45,3 +48,17 @@ def get_db_record_by_id(id):
         raise Exception(f"Record with id {id} does not exists")
 
     return record
+
+
+def process_error(author, error):
+    logging.error(f"{error} - {author}")
+    if isinstance(error, commands.CommandInvokeError):
+        error_msg = error.original
+    elif isinstance(error, commands.CommandNotFound):
+        return
+    else:
+        error_msg = error
+
+    embed = error_embed(error_msg)
+
+    return embed

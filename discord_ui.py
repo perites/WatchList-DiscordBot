@@ -7,15 +7,13 @@ import tools
 
 
 class RecordsOfTypeSelector(Select):
-    def __init__(self, type_class, records):
+    def __init__(self, records):
         options = [discord.SelectOption(label=record.get_info().title, description=str(record).split(" - ")[1],
                                         value=record.db_id)
                    for record in records]
 
-        super().__init__(placeholder=f"Choose a {type_class.name} to set status watched", min_values=1, max_values=1,
+        super().__init__(placeholder=f"Choose a {records[0].name} to set status watched", min_values=1, max_values=1,
                          options=options)
-
-        self.type_class = type_class
 
     async def callback(self, interaction: discord.Interaction):
         db_record_id = int(self.values[0])
@@ -33,6 +31,6 @@ class RecordsOfTypeSelector(Select):
 
 
 class MyView(View):
-    def __init__(self, type_class, records_info):
+    def __init__(self, records_info):
         super().__init__()
-        self.add_item(RecordsOfTypeSelector(type_class, records_info))
+        self.add_item(RecordsOfTypeSelector(records_info))

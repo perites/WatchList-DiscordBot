@@ -78,7 +78,7 @@ async def watched(ctx, type_name):
     for db_record in taem.get_db_records_of_type(type_name):
         records.append(taem.db_record_to_record(type_class, db_record))
 
-    await ctx.send(f"Choose a {type_name} to set status watched:", view=discord_ui.MyView(type_class, records))
+    await ctx.send(f"Choose a {type_name} to set status watched:", view=discord_ui.MyView(records))
 
 
 # @bot.command()

@@ -10,7 +10,7 @@ db = PostgresqlDatabase(secrets.DATABASE_INFO["type_name"],
 
 
 class WatchListRecord(Model):
-    type = TextField(choices=['anime', 'film', 'tv-show'])
+    type_name = TextField(choices=['anime', 'film', 'tv-show'])
     information_url = TextField(unique=True)
     creator = TextField()
     note = TextField(null=True)

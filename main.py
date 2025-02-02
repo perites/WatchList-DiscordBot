@@ -1,7 +1,6 @@
 # TODO add logging to channel for critical errors
 # TODO add dropdown type_name menu
 # TODO add ability to schedule using discrod events
-# TODO add command for random record, random record of type_name
 
 import logging
 import sys
@@ -60,6 +59,21 @@ async def show(ctx):
     await ctx.send(embed=embed)
 
 
+@bot.command(name="random")
+@commands.cooldown(10, 60, commands.BucketType.user)
+async def random(ctx, type_name=None):
+    db_record = taem.get_random_db_record(type_name)
+    record = taem.db_record_to_record(taem.get_type(db_record.type_name), db_record)
+
+    embed = discord.Embed(
+        title=f'Random {record.type_name}',
+        color=discord.Color.blue(),
+        description=str(record)
+    )
+
+    await ctx.send(embed=embed)
+
+
 @bot.command(name="add")
 @commands.cooldown(2, 60, commands.BucketType.user)
 async def watchlist_add(ctx, type, information_url, *note):
@@ -69,9 +83,9 @@ async def watchlist_add(ctx, type, information_url, *note):
 
     information_url = class_list_entity.validate_link(information_url)
 
-    tools.add_to_watchlist(type=type, information_url=information_url, creator=ctx.author.name,
-                           note=" ".join(note),
-                           status="added", created_at=time.time())
+    taem.add_to_watchlist(type=type, information_url=information_url, creator=ctx.author.name,
+                          note=" ".join(note),
+                          status="added", created_at=time.time())
 
     embed = tools.success_embed("Added to watchlist")
     await ctx.send(embed=embed)

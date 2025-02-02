@@ -4,8 +4,6 @@ import discord
 import requests
 from discord.ext import commands
 
-import models
-
 
 def is_valid_url(url):
     try:
@@ -32,22 +30,6 @@ def error_embed(msg):
         description=msg,
     )
     return embed
-
-
-def add_to_watchlist(**information):
-    try:
-        models.WatchListRecord.create(**information)
-    except Exception as e:
-        logging.critical(f"Error during saving to DB : {e}")
-        raise Exception(f"Could not save to DB for some reason.\n\nTechnical error : {e}")
-
-
-def get_db_record_by_id(id):
-    record = models.WatchListRecord.get_or_none(models.WatchListRecord.id == id)
-    if not record:
-        raise Exception(f"Record with id {id} does not exists")
-
-    return record
 
 
 def process_error(author, error):

@@ -3,6 +3,7 @@ import time
 import discord
 from discord.ui import View, Select
 
+import classes
 import tools
 
 
@@ -19,7 +20,7 @@ class RecordsOfTypeSelector(Select):
     async def callback(self, interaction: discord.Interaction):
         db_record_id = int(self.values[0])
 
-        db_record = tools.get_db_record_by_id(db_record_id)
+        db_record = classes.TypesAndRecordsManagers.get_db_record_by_id(db_record_id)
         if not interaction.user.name == db_record.creator:
             raise Exception("Only creator can mark as watched")
 

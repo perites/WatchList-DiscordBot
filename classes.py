@@ -1,7 +1,9 @@
 import dataclasses
 import logging
+import urllib.parse
 
 import mal
+import peewee
 import wikipediaapi
 
 import models
@@ -36,7 +38,7 @@ class WikiHelper:
             raise Exception("Not a wikipedia link")
 
         info = page_link.split("//")[1].split("/")
-        title = info[2]
+        title = urllib.parse.unquote(info[2])
         language = info[0].split(".")[0]
 
         wiki_wiki = wikipediaapi.Wikipedia(user_agent=secrets.user_agent, language=language)
@@ -232,6 +234,39 @@ class TypesAndRecordsManagers:
                                   .order_by(models.WatchListRecord.created_at.asc()))
 
         return db_records_of_type
+
+    @staticmethod
+    def all_db_records():
+        return list(models.WatchListRecord.select().where(models.WatchListRecord.status != "watched"))
+
+    @staticmethod
+    def add_to_watchlist(**information):
+        try:
+            models.WatchListRecord.create(**information)
+        except Exception as e:
+            logging.critical(f"Error during saving to DB : {e}")
+            raise Exception(f"Could not save to DB for some reason.\n\nTechnical error : {e}")
+
+    @staticmethod
+    def get_db_record_by_id(id):
+        record = models.WatchListRecord.get_or_none(models.WatchListRecord.id == id)
+        if not record:
+            raise Exception(f"Record with id {id} does not exists")
+
+        return record
+
+    @staticmethod
+    def get_random_db_record(type_name):
+        query = models.WatchListRecord.select()
+
+        if type_name:
+            query = query.where(models.WatchListRecord.type == type_name)
+
+        record = query.order_by(peewee.fn.Random()).limit(1).first()
+        if record is None:
+            raise Exception("No records found of this type")
+
+        return record
 
     @staticmethod
     def db_record_to_record(type_class, db_record):

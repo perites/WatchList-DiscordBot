@@ -1,15 +1,19 @@
 # TODO add logging to channel for critical errors
+# TODO add dropdown type menu
+# TODO add ability to schedule using discrod events
+# TODO add command for random record, random record of type
+# todo add caching fot mal and wikipage objects
 
 import logging
 import sys
 import time
 
 import discord
-import requests
 from discord.ext import commands
 
 import classes
 import config
+import discord_ui
 import secrets
 import tools
 
@@ -27,11 +31,7 @@ logging.basicConfig(
 )
 
 taem = classes.TypesAndRecordsManagers()
-taem.set_types({
-    classes.AnimeWatchListRecord.type: classes.AnimeWatchListRecord,
-    classes.FilmWatchListRecord.type: classes.FilmWatchListRecord,
-    classes.TvShowWatchListRecord.type: classes.TvShowWatchListRecord
-})
+taem.set_types([classes.AnimeWatchListRecord, classes.FilmWatchListRecord, classes.TvShowWatchListRecord])
 
 
 @bot.command(name="show")
@@ -41,28 +41,27 @@ async def show(ctx):
         color=discord.Color.blue(),
     )
 
-    for type, index_to_db_record in taem.indexes_to_db_records().items():
-        record_type_class = taem.get_type(type)
+    for type_class in taem.types:
+        db_records_of_type = taem.get_db_records_of_type(type_class.name)
+        if not db_records_of_type:
+            continue
 
         value = ""
-        for index, db_record in index_to_db_record.items():
-            value += f"{index}. {str(record_type_class(db_record))}"
+        for index, db_record in enumerate(db_records_of_type):
+            value += f"{index}. {str(taem.db_record_to_record(type_class, db_record))}"
 
-        embed.add_field(name=f"{type}(s)", value=value, inline=False)
+        embed.add_field(name=f"{type_class.name}(s)", value=value, inline=False)
 
     await ctx.send(embed=embed)
 
 
 @bot.command(name="add")
 async def watchlist_add(ctx, type, information_url, *note):
-    if requests.get(information_url).status_code != 200:
-        raise Exception("Not a valid link")
+    tools.is_valid_url(information_url)
 
     class_list_entity = taem.get_type(type)
-    if not class_list_entity:
-        raise Exception("Unsupported type")
 
-    class_list_entity.validate_link(information_url)
+    information_url = class_list_entity.validate_link(information_url)
 
     tools.add_to_watchlist(type=type, information_url=information_url, creator=ctx.author.name,
                            note=" ".join(note),
@@ -73,25 +72,15 @@ async def watchlist_add(ctx, type, information_url, *note):
 
 
 @bot.command(name="watched")
-async def watched(ctx, type, index):
-    type_records = taem.indexes_to_db_records().get(type)
-    if not type_records:
-        raise Exception("No records with this type were found")
+async def watched(ctx, type_name):
+    type_class = taem.get_type(type_name)
+    records = []
+    for db_record in taem.get_db_records_of_type(type_name):
+        records.append(taem.db_record_to_record(type_class, db_record))
 
-    db_record = type_records[int(index)]
-
-    if not ctx.author.name == db_record.creator:
-        raise Exception("Only creator can mark as watched")
-
-    db_record.status = "watched"
-    db_record.watched_at = time.time()
-    db_record.save()
-
-    embed = tools.success_embed("Marked as watched")
-    await ctx.send(embed=embed)
+    await ctx.send(f"Choose a {type_name} to set status watched:", view=discord_ui.MyView(type_class, records))
 
 
-#
 # @bot.command()
 # # @has_role(roles_for_clean)
 # async def clean(ctx, limit):

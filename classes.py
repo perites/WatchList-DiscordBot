@@ -114,11 +114,10 @@ class AnimeWatchListRecord(WatchListRecord):
 
     @staticmethod
     def validate_link(information_url):
-        info_link_list = list(reversed(information_url.split('/')))
-        if not (info_link_list[2] == "anime") or not ("myanimelist" in info_link_list[3]):
+        info_link_list = list(information_url.split('/'))
+        if not (info_link_list[3] == "anime") or not ("myanimelist" in info_link_list[2]):
             raise Exception("Unsupported link for type anime")
-
-        return information_url
+        return "/".join(info_link_list[0:5])
 
     def get_info(self):
         return EntityInfo(
@@ -230,7 +229,7 @@ class TypesAndRecordsManagers:
     @staticmethod
     def get_db_records_of_type(type_name):
         db_records_of_type = list(models.WatchListRecord.select().where(
-            (models.WatchListRecord.type == type_name) & (models.WatchListRecord.status != "watched"))
+            (models.WatchListRecord.type_name == type_name) & (models.WatchListRecord.status != "watched"))
                                   .order_by(models.WatchListRecord.created_at.asc()))
 
         return db_records_of_type
@@ -260,7 +259,7 @@ class TypesAndRecordsManagers:
         query = models.WatchListRecord.select()
 
         if type_name:
-            query = query.where(models.WatchListRecord.type == type_name)
+            query = query.where(models.WatchListRecord.type_name == type_name)
 
         record = query.order_by(peewee.fn.Random()).limit(1).first()
         if record is None:

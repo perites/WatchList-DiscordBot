@@ -83,7 +83,7 @@ async def watchlist_add(ctx, type, information_url, *note):
 
     information_url = class_list_entity.validate_link(information_url)
 
-    taem.add_to_watchlist(type=type, information_url=information_url, creator=ctx.author.name,
+    taem.add_to_watchlist(type_name=type, information_url=information_url, creator=ctx.author.name,
                           note=" ".join(note),
                           status="added", created_at=time.time())
 
@@ -108,7 +108,7 @@ async def watched(ctx, type_name):
 @bot.command()
 async def clean(ctx, limit):
     if str(ctx.author.id) != "513071445790949386":
-        await ctx.send(embed=tools.error_embed("No prav"))
+        await ctx.send(embed=tools.error_embed("Not allowed"))
         return
     limit = int(limit)
     await ctx.channel.purge(limit=int(limit) + 1)

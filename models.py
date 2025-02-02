@@ -22,7 +22,5 @@ class WatchListRecord(Model):
     class Meta:
         database = db
 
-#
-#
 # db.drop_tables([WatchListRecord])
 # db.create_tables([WatchListRecord])

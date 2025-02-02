@@ -2,7 +2,6 @@
 # TODO add dropdown type_name menu
 # TODO add ability to schedule using discrod events
 # TODO add command for random record, random record of type_name
-# todo add caching fot mal and wikipage objects
 
 import logging
 import sys
@@ -35,6 +34,7 @@ taem.set_types([classes.AnimeWatchListRecord, classes.FilmWatchListRecord, class
 
 
 @bot.command(name="show")
+@commands.cooldown(6, 60, commands.BucketType.user)
 async def show(ctx):
     embed = discord.Embed(
         title='Watchlist',
@@ -61,6 +61,7 @@ async def show(ctx):
 
 
 @bot.command(name="add")
+@commands.cooldown(2, 60, commands.BucketType.user)
 async def watchlist_add(ctx, type, information_url, *note):
     tools.is_valid_url(information_url)
 
@@ -77,6 +78,7 @@ async def watchlist_add(ctx, type, information_url, *note):
 
 
 @bot.command(name="watched")
+@commands.cooldown(2, 60, commands.BucketType.user)
 async def watched(ctx, type_name):
     type_class = taem.get_type(type_name)
     records = []
@@ -101,6 +103,8 @@ async def clean(ctx, limit):
 @bot.event
 async def on_command_error(ctx, error):
     embed = tools.process_error(ctx.author.name, error)
+    if not embed:
+        return
     await ctx.send(embed=embed)
 
 

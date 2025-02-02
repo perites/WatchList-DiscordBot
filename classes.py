@@ -23,11 +23,9 @@ class WikiHelper:
     @staticmethod
     def find_keywords(page, keywords):
         page_summary = page.summary.lower()
-        print(page_summary)
 
         for keyword in keywords:
             if keyword not in page_summary:
-                print(keyword)
                 return False
 
         return True
@@ -42,24 +40,20 @@ class WikiHelper:
         language = info[0].split(".")[0]
 
         wiki_wiki = wikipediaapi.Wikipedia(user_agent=secrets.user_agent, language=language)
+        page = wiki_wiki.page(title)
 
-        if language == "en":
-            page = wiki_wiki.page(title)
-        else:
-            page = wiki_wiki.page(title).langlinks.get("en", None)
+        if page.language != "en":
+            page = page.langlinks.get("en")
 
-        try:
-            if not page.exists():
-                raise Exception("Wikipedia page does not exist")
-
-        except AttributeError:
-            raise Exception("Some problem with wikipedia, please try again")
+        if not page.exists():
+            raise Exception("Wikipedia page does not exist")
 
         return page
 
 
 class WatchListRecord:
     type_name = "type_name was not set"
+    cache = {}
 
     def __init__(self, db_record):
         self.information_url = db_record.information_url
@@ -69,6 +63,19 @@ class WatchListRecord:
         self.db_id = db_record.id
         self.status = db_record.status
         self.created_at = db_record.created_at
+
+    def get_from_cache(self, key):
+        result = self.__class__.cache.get(key)
+        return result if result else self.set_cache(key)
+
+    def set_cache(self, key):
+        value = self.value_from_key(key)
+        self.__class__.cache[key] = value
+
+        return value
+
+    def value_from_key(self, key):
+        raise NotImplementedError(f"Function value_from_key was not implemented for type {self.type_name}")
 
     @staticmethod
     def validate_link(information_url):
@@ -93,9 +100,15 @@ class WatchListRecord:
 class AnimeWatchListRecord(WatchListRecord):
     type_name = 'anime'
 
+    cache = {}
+
     def __init__(self, db_record):
         super().__init__(db_record)
-        self.mal_title = mal.Anime(list(reversed(self.information_url.split('/')))[1])
+
+        self.mal_title = self.get_from_cache(list(reversed(self.information_url.split('/')))[1])
+
+    def value_from_key(self, key):
+        return mal.Anime(key)
 
     @staticmethod
     def validate_link(information_url):
@@ -122,7 +135,10 @@ class FilmWatchListRecord(WatchListRecord):
 
     def __init__(self, db_record):
         super().__init__(db_record)
-        self.page = WikiHelper.get_english_page(self.information_url)
+        self.page = self.get_from_cache(self.information_url)
+
+    def value_from_key(self, key):
+        return WikiHelper.get_english_page(key)
 
     @staticmethod
     def validate_link(information_url):
@@ -135,10 +151,6 @@ class FilmWatchListRecord(WatchListRecord):
         is_film = WikiHelper.find_keywords(page, is_film_keywords)
         is_cartoon = WikiHelper.find_keywords(page, is_cartoon_keywords)
         is_have_banned_keywords = WikiHelper.find_keywords(page, banned_keywords)
-
-        print(is_film)
-        print(is_cartoon)
-        print(is_have_banned_keywords)
 
         if (not (is_film or is_cartoon)) or is_have_banned_keywords:
             raise Exception("Not a film related wikipedia page, if you think it is then contact perite")
@@ -162,14 +174,17 @@ class TvShowWatchListRecord(WatchListRecord):
 
     def __init__(self, db_record):
         super().__init__(db_record)
-        self.page = WikiHelper.get_english_page(self.information_url)
+        self.page = self.get_from_cache(self.information_url)
+
+    def value_from_key(self, key):
+        return WikiHelper.get_english_page(key)
 
     @staticmethod
     def validate_link(information_url):
         page = WikiHelper.get_english_page(information_url)
 
         is_television_series_keywords = ['television series']
-        is_sitcom_keywords = ['sitcoms']
+        is_sitcom_keywords = ['sitcom']
         is_has_author_keywords = ['created by']
         banned_keywords = ['soundtrack']
 
@@ -225,5 +240,4 @@ class TypesAndRecordsManagers:
         except Exception as e:
             msg = f"Something wrong with link for type {type_class.type_name}: {db_record.information_url} (id:{db_record.id})"
             logging.critical(msg)
-            # await ctx.send(embed=tools.error_embed(msg))
             return None

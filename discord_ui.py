@@ -38,4 +38,6 @@ class RecordsOfTypeSelectorView(View):
 
     async def on_error(self, interaction: discord.Interaction, error: Exception, item):
         embed = tools.process_error(interaction.user.name, error)
+        if not embed:
+            return
         await interaction.response.send_message(embed=embed)

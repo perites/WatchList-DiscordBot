@@ -54,7 +54,7 @@ def process_error(author, error):
     logging.error(f"{error} - {author}")
     if isinstance(error, commands.CommandInvokeError):
         error_msg = error.original
-    elif isinstance(error, commands.CommandNotFound):
+    elif isinstance(error, commands.CommandNotFound) or isinstance(error, commands.CommandOnCooldown):
         return
     else:
         error_msg = error

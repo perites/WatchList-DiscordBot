@@ -1,12 +1,12 @@
 from peewee import PostgresqlDatabase, Model, TextField, TimestampField
 
-import secrets
+import my_secrets
 
-db = PostgresqlDatabase(secrets.DATABASE_INFO["type_name"],
-                        user=secrets.DATABASE_INFO["user"],
-                        password=secrets.DATABASE_INFO["password"],
-                        host=secrets.DATABASE_INFO["host"],
-                        port=secrets.DATABASE_INFO["port"])
+db = PostgresqlDatabase(my_secrets.DATABASE_INFO["type_name"],
+                        user=my_secrets.DATABASE_INFO["user"],
+                        password=my_secrets.DATABASE_INFO["password"],
+                        host=my_secrets.DATABASE_INFO["host"],
+                        port=my_secrets.DATABASE_INFO["port"])
 
 
 class WatchListRecord(Model):

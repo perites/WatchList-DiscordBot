@@ -7,7 +7,7 @@ import peewee
 import wikipediaapi
 
 import models
-import secrets
+import my_secrets
 
 
 @dataclasses.dataclass
@@ -41,7 +41,7 @@ class WikiHelper:
         title = urllib.parse.unquote(info[2])
         language = info[0].split(".")[0]
 
-        wiki_wiki = wikipediaapi.Wikipedia(user_agent=secrets.user_agent, language=language)
+        wiki_wiki = wikipediaapi.Wikipedia(user_agent=my_secrets.user_agent, language=language)
         page = wiki_wiki.page(title)
 
         if page.language != "en":

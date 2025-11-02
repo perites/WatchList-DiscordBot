@@ -12,7 +12,7 @@ from discord.ext import commands
 import classes
 import config
 import discord_ui
-import secrets
+import my_secrets
 import tools
 
 bot = commands.Bot(command_prefix=f"{config.prefix}", activity=discord.Game(name=f'{config.prefix} help'),
@@ -157,4 +157,4 @@ async def on_command_error(ctx, error):
 
 
 if __name__ == '__main__':
-    bot.run(secrets.BOT_TOKEN, log_handler=None, root_logger=True)
+    bot.run(my_secrets.BOT_TOKEN, log_handler=None, root_logger=True)
